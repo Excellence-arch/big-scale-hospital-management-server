@@ -1,0 +1,33 @@
+const express = require("express");
+const app = express();
+require("dotenv").config();
+const mongoose = require("mongoose");
+const cors = require(cors);
+const bodyParser = require("body-parser");
+const userRouter = require("./routes/users.route");
+
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json({limit: "50mb"}));
+app.use(cors());
+app.use("/users", userRouter)
+const PORT = process.env.PORT || 100;
+const URI = process.env.URI;
+
+mongoose.connect(URI, (err) => {
+  if (err) {
+    console.log("Error connecting to the database");
+  } else {
+    console.log("Connection to the database established");
+  }
+})
+
+const connection = app.listen(PORT, () => console.log(`app is listening on port: ${PORT}`));
+
+const io = require("socket.io")(connection, {cors: {options: "*"}});
+
+io.on("connection", (socket) => {
+  console.log(`${socket.id} is online`);
+  socket.on("disconnect", () => {
+    console.log(`${socket.id} is offline`)
+  })
+})
