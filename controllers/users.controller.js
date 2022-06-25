@@ -1,6 +1,8 @@
 const UserModel = require("../models/users.model");
 const { internalServerError } = require("./errors.controller");
 const nodemailer = require("nodemailer");
+const VerificationModel = require("../models/verification.model");
+const { generatePin } = require("./verification.controller");
 
 const connectChat = (req, res) => {
   return 0;
@@ -47,22 +49,41 @@ const register = (req, res) => {
                   internalServerError(res);
                 } else {
                   if (resp) {
-                    const mailOptions = {
-                      from: process.env.EMAIL, // sender address
-                      to: newUser.email, // list of receivers
-                      subject: "Hospital Management: Email Verification", // Subject line
-                      html: `<h1>Welcome to this hospital</h1> <br /> <p>We will give you the utmost care and support</p> <p>Your login ID is ${newUser.id}</p>`, // plain text body
+                    const verify = {
+                      id: generatePin(),
+                      userId: newUser.id,
+                      for: "registration",
+                      expired: false,
                     };
-                    transporter.sendMail(mailOptions, function (errorss, info) {
-                      if (errorss){
-                        internalServerError(res)
-                      }
-                      else{
-                        res.send({
-                          status: true,
-                          message:
-                            `A message has been sent to your ${info.envelope.to[0]}. Please verify your account`,
+                    const newForm = new VerificationModel(verify);
+                    newForm.save((errors, results) => {
+                      if (errors) {
+                        res.status.send({
+                          status: false,
+                          message: `Error generating verification pin, Please contact ${process.env.EMAIL} to resolve this issue. Thank you`,
                         });
+                      } else {
+                        if (results) {
+                          const mailOptions = {
+                            from: process.env.EMAIL, // sender address
+                            to: newUser.email, // list of receivers
+                            subject: "Hospital Management: Email Verification", // Subject line
+                            html: `<h1>Welcome to this hospital</h1> <br /> <p>We will give you the utmost care and support</p> <p>Your login ID is ${newUser.id}</p> <p>Verification ID: ${results.id}</p>`, // plain text body
+                          };
+                          transporter.sendMail(
+                            mailOptions,
+                            function (errorss, info) {
+                              if (errorss) {
+                                internalServerError(res);
+                              } else {
+                                res.send({
+                                  status: true,
+                                  message: `A message has been sent to your ${info.envelope.to[0]}. Please verify your account`,
+                                });
+                              }
+                            }
+                          );
+                        }
                       }
                     });
                   }
