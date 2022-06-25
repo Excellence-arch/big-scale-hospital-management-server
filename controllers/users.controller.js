@@ -23,15 +23,16 @@ const generateRandomNumber = () => {
 const register = (req, res) => {
   const newUser = req.body;
   (newUser.picture = ""), (newUser.verified = false);
-  newUser.role = "user";
-  let id = generateRandomNumber();
-  UserModel.findOne({ ids: newUser.ids }, (error, result) => {
+  newUser.role = "patient";
+  newUser.fired = false;
+  newUser.id = generateRandomNumber();
+  UserModel.findOne({ id: newUser.id }, (error, result) => {
     if (error) {
       console.log(error);
       internalServerError(res);
     } else {
       if (result) {
-        register(req);
+        register(req, res);
       } else {
         UserModel.findOne({ email: req.body.email }, (err, response) => {
           if (err) {
@@ -49,8 +50,8 @@ const register = (req, res) => {
                     const mailOptions = {
                       from: process.env.EMAIL, // sender address
                       to: newUser.email, // list of receivers
-                      subject: "This is a test", // Subject line
-                      html: "<p>Link or pin here</p>", // plain text body
+                      subject: "Hospital Management: Email Verification", // Subject line
+                      html: `<h1>Welcome to this hospital</h1> <br /> <p>We will give you the utmost care and support</p> <p>Your login ID is ${newUser.id}</p>`, // plain text body
                     };
                     transporter.sendMail(mailOptions, function (errorss, info) {
                       if (errorss){

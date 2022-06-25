@@ -9,6 +9,7 @@ const userSchema = mongoose.Schema({
   role: String,
   picture: String,
   verified: Boolean,
+  fired: Boolean,
 });
 
 const UserModel = mongoose.model("users_tbs", userSchema);
