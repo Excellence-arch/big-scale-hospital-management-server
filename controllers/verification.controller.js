@@ -21,41 +21,23 @@ const verifyCode = (req, res) => {
             if (!result) {
               res.send({ status: false, message: `Invalid verification code` });
             } else {
-        //       UserModel.findOne({id: response.userId}, (errorss, results) => {
-        //         if (errorss) {
-        //           internalServerError(res);
-        //         } else {
-        //           if(!resultss) {
-        //             res.send({status: false, message: `An unknown error occurred`});
-        //           } else {
-        //             response.expired = true;
-        //             VerificationModel.findByIdAndUpdate(
-        //               response._id,
-        //               response,
-        //               (errors, resp) => {
-        //                 if (errors) {
-        //                   internalServerError(res);
-        //                 } else {
-        //                   if (resp) {
-        //                     res
-        //                       .status(200)
-        //                       .send({
-        //                         status: true,
-        //                         message: `successful`,
-        //                         result,
-        //                       });
-        //                   } else {
-        //                     res.send({
-        //                       status: false,
-        //                       message: "An unknown error occurred",
-        //                     });
-        //                   }
-        //                 }
-        //               }
-        //             );
-        //           }
-        //         }
-        //       })
+              result.verified = true;
+              response.expired = true;
+              UserModel.findByIdAndUpdate(result._id, result, (errors, resp) => {
+                if(errors) {
+                  internalServerError(res);
+                } else {
+                  VerificationModel.findByIdAndUpdate(response._id, response, (errorss, results) => {
+                    if(errorss) {
+                      internalServerError(res)
+                    } else {
+                      if(results) {
+                        res.status(200).send({status: true, message: "verification successful", resp});
+                      }
+                    }
+                  })
+                }
+              })
             }
           }
         })
