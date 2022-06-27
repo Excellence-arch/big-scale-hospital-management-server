@@ -19,7 +19,9 @@ const transporter = nodemailer.createTransport({
 });
 
 const generateRandomNumber = () => {
-  return Math.floor(Math.random + 10000);
+  let x = Math.floor(Math.random() * 10000);
+  // console.log(Math.random)
+  return x;
 };
 
 const register = (req, res) => {
@@ -30,7 +32,7 @@ const register = (req, res) => {
   newUser.id = generateRandomNumber();
   UserModel.findOne({ id: newUser.id }, (error, result) => {
     if (error) {
-      console.log(error);
+      // console.log(error);
       internalServerError(res);
     } else {
       if (result) {
@@ -51,14 +53,15 @@ const register = (req, res) => {
                   if (resp) {
                     const verify = {
                       id: generatePin(),
-                      userId: newUser.id,
+                      userId: resp.id,
                       for: "registration",
                       expired: false,
                     };
                     const newForm = new VerificationModel(verify);
                     newForm.save((errors, results) => {
                       if (errors) {
-                        res.status.send({
+                        console.log(errors)
+                        res.send({
                           status: false,
                           message: `Error generating verification pin, Please contact ${process.env.EMAIL} to resolve this issue. Thank you`,
                         });
@@ -66,9 +69,9 @@ const register = (req, res) => {
                         if (results) {
                           const mailOptions = {
                             from: process.env.EMAIL, // sender address
-                            to: newUser.email, // list of receivers
+                            to: resp.email, // list of receivers
                             subject: "Hospital Management: Email Verification", // Subject line
-                            html: `<h1>Welcome to this hospital</h1> <br /> <p>We will give you the utmost care and support</p> <p>Your login ID is ${newUser.id}</p> <p>Verification ID: ${results.id}</p>`, // plain text body
+                            html: `<h1>Welcome to this hospital</h1> <br /> <p>We will give you the utmost care and support</p> <p>Your login ID is ${resp.id}</p> <p>Verification ID: ${results.id}</p>`, // plain text body
                           };
                           transporter.sendMail(
                             mailOptions,
@@ -107,12 +110,13 @@ const login = (req, res) => {
       } else {
         if (result.verified === false) {
           res.send({
-            status: false,
+            status: true,
             message:
               "Account has not been Verified, please check your email and verify it. Thank you",
+            verified: false
           });
         } else {
-          res.send({ status: true, message: "login successful" });
+          res.send({ status: true, message: "login successful", verified: false });
         }
       }
     }
