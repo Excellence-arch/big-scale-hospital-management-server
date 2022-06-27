@@ -12,6 +12,8 @@ app.use(bodyParser.json({limit: "50mb"}));
 app.use(cors());
 app.use("/users", userRouter);
 app.use("/admin", adminRouter);
+
+
 const PORT = process.env.PORT || 100;
 const URI = process.env.URI;
 
@@ -25,11 +27,11 @@ mongoose.connect(URI, (err) => {
 
 const connection = app.listen(PORT, () => console.log(`app is listening on port: ${PORT}`));
 
-const io = require("socket.io")(connection, {cors: {options: "*"}});
+// const io = require("socket.io")(connection, {cors: {options: "*"}});
 
-io.on("connection", (socket) => {
-  console.log(`${socket.id} is online`);
-  socket.on("disconnect", () => {
-    console.log(`${socket.id} is offline`)
-  })
-})
+// io.on("connection", (socket) => {
+//   console.log(`${socket.id} is online`);
+//   socket.on("disconnect", () => {
+//     console.log(`${socket.id} is offline`)
+//   })
+// });

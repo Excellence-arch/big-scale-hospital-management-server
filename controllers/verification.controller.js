@@ -14,11 +14,12 @@ const verifyCode = (req, res) => {
       if(!response) {
         res.send({status: false, message: `Invalid verification code`});
       } else {
-        UserModel.findOne({id: req.body.userId}, (error, result) => {
+        UserModel.findOne({id: response.userId}, (error, result) => {
           if(error) {
             internalServerError(res);
           } else {
             if (!result) {
+              console.log("Hi");
               res.send({ status: false, message: `Invalid verification code` });
             } else {
               result.verified = true;
