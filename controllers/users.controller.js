@@ -6,7 +6,7 @@ const { generatePin } = require("./verification.controller");
 // const connection = require("../mysql_connection");
 
 const mysql = require("mysql");
-const XOAuth2 = require("nodemailer/lib/xoauth2");
+// const XOAuth2 = require("nodemailer/lib/xoauth2");
 
 const pool = mysql.createPool({
   host: "localhost",
@@ -20,16 +20,16 @@ const connectChat = (req, res) => {
 };
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  // service: "gmail",
+  // host: "smtp.gmail.com",
+  service: "gmail",
   port: 465,
   secure: true,
   auth: {
-    type: "OAuth2",
+    // type: "OAuth2",
     user: process.env.EMAIL,
-    // pass: process.env.PASSWORD,
-    serviceClient: process.env.client_id,
-    privateKey: process.env.private_key,
+    pass: process.env.PASSWORD,
+    // serviceClient: process.env.client_id,
+    // privateKey: process.env.private_key,
   },
 });
 
@@ -81,7 +81,7 @@ const register = (req, res) => {
             from: process.env.EMAIL, // sender address
             to: newUser.email, // list of receivers
             subject: "Hospital Management: Email Verification", // Subject line
-            text: "Hi",
+            // text: "Hi",
             html: `<h1>Welcome to this hospital</h1> <br /> <p>We will give you the utmost care and support</p> <p>Your login ID is ${newUser.id}</p> <p>Verification ID: ${verify.id}</p>`, // plain text body
           };
           transporter.sendMail(
