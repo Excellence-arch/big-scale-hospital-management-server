@@ -20,16 +20,16 @@ const connectChat = (req, res) => {
 };
 
 const transporter = nodemailer.createTransport({
-  // host: "smtp.gmail.com",
-  service: "gmail",
+  host: "smtp.gmail.com",
+  // service: "gmail",
   port: 465,
   secure: true,
   auth: {
-    // type: "OAuth2",
+    type: "OAuth2",
     user: process.env.EMAIL,
-    pass: process.env.PASSWORD,
-    // serviceClient: process.env.client_id,
-    // privateKey: process.env.private_key,
+    // pass: process.env.PASSWORD,
+    serviceClient: process.env.client_id,
+    privateKey: process.env.private_key,
   },
 });
 
