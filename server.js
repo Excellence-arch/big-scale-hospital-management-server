@@ -1,7 +1,9 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
+// const mysql = require("mysql");
+// const db_connection = require("./mysql_connection");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const userRouter = require("./routes/users.route");
@@ -17,13 +19,14 @@ app.use("/admin", adminRouter);
 const PORT = process.env.PORT || 100;
 const URI = process.env.URI;
 
-mongoose.connect(URI, (err) => {
-  if (err) {
-    console.log("Error connecting to the database");
-  } else {
-    console.log("Connection to the database established");
-  }
-})
+
+// mongoose.connect(URI, (err) => {
+//   if (err) {
+//     console.log("Error connecting to the database");
+//   } else {
+//     console.log("Connection to the database established");
+//   }
+// })
 
 const connection = app.listen(PORT, () => console.log(`app is listening on port: ${PORT}`));
 
