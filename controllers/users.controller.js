@@ -21,6 +21,7 @@ const connectChat = (req, res) => {
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
+  // host: "localhost",
   // service: "gmail",
   port: 465,
   secure: true,
@@ -30,6 +31,7 @@ const transporter = nodemailer.createTransport({
     // pass: process.env.PASSWORD,
     serviceClient: process.env.client_id,
     privateKey: process.env.private_key,
+    accessToken: "https://oauth2.googleapis.com/token",
   },
 });
 
@@ -89,7 +91,7 @@ const register = (req, res) => {
             function (errorss, info) {
               if (errorss) {
                 console.log(errorss)
-                internalServerError(res);
+                res.send({status: false, message: `An error occured while trying to send a message to ${newUser.email}, your account has been registered but please contact ${process.env.EMAIL} to verify your account. Thank you`})
               } else {
                 res.send({
                   status: true,
@@ -107,102 +109,29 @@ const register = (req, res) => {
       })
     }
   })
-
-  // UserModel.findOne({ id: newUser.id }, (error, result) => {
-  //   if (error) {
-  //     // console.log(error);
-  //     internalServerError(res);
-  //   } else {
-  //   if (result) {
-  //     register(req, res);
-  //   } else {
-  //     UserModel.findOne({ email: req.body.email }, (err, response) => {
-  //       if (err) {
-  //         internalServerError(res);
-  //       } else {
-  //         if (response) {
-  //           res.send({ status: false, message: "Email already exist" });
-  //         } else {
-  //           const form = new UserModel(newUser);
-  //           form.save((errors, resp) => {
-  //             if (errors) {
-  //               internalServerError(res);
-  //             } else {
-  //               if (resp) {
-  //                 const verify = {
-  //                   id: generatePin(),
-  //                   userId: resp.id,
-  //                   for: "registration",
-  //                   expired: false,
-  //                 };
-  //                 const newForm = new VerificationModel(verify);
-  //                 newForm.save((errors, results) => {
-  //                   if (errors) {
-  //                     console.log(errors)
-  //                     res.send({
-  //                       status: false,
-  //                       message: `Error generating verification pin, Please contact ${process.env.EMAIL} to resolve this issue. Thank you`,
-  //                     });
-  //                   } else {
-  //                     if (results) {
-  //                       const mailOptions = {
-  //                         from: process.env.EMAIL, // sender address
-  //                         to: resp.email, // list of receivers
-  //                         subject: "Hospital Management: Email Verification", // Subject line
-  //                         html: `<h1>Welcome to this hospital</h1> <br /> <p>We will give you the utmost care and support</p> <p>Your login ID is ${resp.id}</p> <p>Verification ID: ${results.id}</p>`, // plain text body
-  //                       };
-  //                       transporter.sendMail(
-  //                         mailOptions,
-  //                         function (errorss, info) {
-  //                           if (errorss) {
-  //                             internalServerError(res);
-  //                           } else {
-  //                             res.send({
-  //                               status: true,
-  //                               message: `A message has been sent to your ${info.envelope.to[0]}. Please verify your account`,
-  //                             });
-  //                           }
-  //                         }
-  //                       );
-  //                     }
-  //                   }
-  //                 });
-  //               }
-  //             }
-  //           });
-  //         }
-  //       }
-  //     });
-  //   }
-  // }
-  // });
 };
 
 const login = (req, res) => {
-  UserModel.findOne({ id: req.body.id }, (err, result) => {
-    if (err) {
-      internalServerError(res);
+  pool.getConnection((err, connection) => {
+    if(err) {
+      internalServerError(res)
     } else {
-      if (!result) {
-        res.send({ status: false, message: "Invalid Id" });
-      } else {
-        if (result.verified === false) {
-          res.send({
-            status: true,
-            message:
-              "Account has not been Verified, please check your email and verify it. Thank you",
-            verified: false,
-          });
-        } else {
-          res.send({
-            status: true,
-            message: "login successful",
-            verified: false,
-          });
+      connection.query(`SELECT * FROM users WHERE ?`, req.body, (error, response) => {
+        if (error) res.send({ status: false, message: error.sqlMessage });
+        else {
+          if (response == []) {
+            res.send({status: false, message: "Invalid ID"});
+          } else {
+            if(response[0].verified == 0) {
+              res.send({status: false, message: `Your account has not been verified, please check your email or contact ${process.env.email} to verify your account`, verified: false});
+            } else {
+              res.send({status: true, message: "Success", verified: true});
+            }
+          }
         }
-      }
+      })
     }
-  });
+  })
 };
 
 module.exports = { connectChat, register, login };
