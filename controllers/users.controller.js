@@ -3,17 +3,7 @@ const { internalServerError } = require("./errors.controller");
 const nodemailer = require("nodemailer");
 const VerificationModel = require("../models/verification.model");
 const { generatePin } = require("./verification.controller");
-// const connection = require("../mysql_connection");
-
-const mysql = require("mysql");
-// const XOAuth2 = require("nodemailer/lib/xoauth2");
-
-const pool = mysql.createPool({
-  host: "localhost",
-  user: process.env.USER,
-  password: process.env.PASSWORD,
-  database: "hospital_management",
-});
+const pool = require("../mysql_connection");
 
 const connectChat = (req, res) => {
   return 0;
@@ -21,18 +11,16 @@ const connectChat = (req, res) => {
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  // host: "localhost",
-  // service: "gmail",
   port: 465,
   secure: true,
   auth: {
-    type: "OAuth2",
     user: process.env.EMAIL,
-    // pass: process.env.PASSWORD,
-    serviceClient: process.env.client_id,
-    privateKey: process.env.private_key,
-    accessToken: "https://oauth2.googleapis.com/token",
+    pass: process.env.passwords,
   },
+  authMethod: "PLAIN",
+  tls: {
+    rejectUnauthorized: false,
+  }
 });
 
 // transporter.set("oauth2_provision_cb", (user, renew, callback) => {
