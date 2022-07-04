@@ -1,7 +1,7 @@
 const UserModel = require("../models/users.model");
 const { internalServerError } = require("./errors.controller");
 const nodemailer = require("nodemailer");
-const VerificationModel = require("../models/verification.model");
+const jwt = require("jsonwebtoken");
 const { generatePin } = require("./verification.controller");
 const pool = require("../mysql_connection");
 
@@ -113,7 +113,8 @@ const login = (req, res) => {
             if(response[0].verified == 0) {
               res.send({status: false, message: `Your account has not been verified, please check your email or contact ${process.env.email} to verify your account`, verified: false});
             } else {
-              res.send({status: true, message: "Success", verified: true});
+              const token = jwt.sign({id: req.body.id}, "secret", {expiresIn: "1d"});
+              res.send({status: true, message: "Success", verified: true, token});
             }
           }
         }
@@ -122,4 +123,29 @@ const login = (req, res) => {
   })
 };
 
-module.exports = { connectChat, register, login };
+const getDashboard = (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  jwt.verify(token, "secret", (err, resp) => {
+    if (err) {
+      res.send({status: false, message: "Unauthorized"});
+    } else {
+      if (resp) {
+        pool.getConnection((err, con) => {
+          if (err) {
+            internalServerError(res);
+          }else {
+            con.query(`SELECT * FROM users WHERE id=${resp.id}`, (error, response) => {
+              if (error) {
+                res.send({status: false, message: error.sqlMessage});
+              } else {
+                res.send({status: true, message: "Success", response});
+              }
+            })
+          }
+        })
+      }
+    }
+  })
+}
+
+module.exports = { connectChat, register, login, getDashboard };
