@@ -107,7 +107,7 @@ const login = (req, res) => {
       connection.query(`SELECT * FROM users WHERE ?`, req.body, (error, response) => {
         if (error) res.send({ status: false, message: error.sqlMessage });
         else {
-          if (response == []) {
+          if (response.length == 0) {
             res.send({status: false, message: "Invalid ID"});
           } else {
             if(response[0].verified == 0) {
