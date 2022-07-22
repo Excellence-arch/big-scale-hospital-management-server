@@ -16,7 +16,7 @@ app.use("/users", userRouter);
 app.use("/admin", adminRouter);
 
 
-const PORT = process.env.PORT || 100;
+const PORT = process.env.PORT || 5000;
 const URI = process.env.URI;
 
 

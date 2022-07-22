@@ -53,20 +53,21 @@ const register = (req, res) => {
     } else {
       connection.query("INSERT INTO users SET ?", newUser, (err, resp) => {
         if(err) {
-          res.send({status: false, message: err.sqlMessage})
+          if(err.sqlMessage == "Duplicate entry 'oladipupomichael9@gmail.com' for key 'email'") res.send({status: false, message: `Email already exist`});
         } else {
           if(resp.affectedRows !== 0) {
             const verify = {
             id: generatePin(),
-            userId: newUser.id,
-            for: "registration",
+            user_id: newUser.id,
+            purpose: "registration",
             expired: false,
           };
           connection.query("INSERT INTO verification SET ?", verify, (error, response) => {
             if(error) {
+              // console.log(error);
               res.send({status: false, message: "An error occurred while generating your verification pin, please contact oladipupomichael9@gmail.com to verify your account. Thank you"});
             } else {
-              console.log(newUser, verify);
+              // console.log(newUser, verify);
               const mailOptions = {
             from: process.env.EMAIL, // sender address
             to: newUser.email, // list of receivers
@@ -78,7 +79,7 @@ const register = (req, res) => {
             mailOptions,
             function (errorss, info) {
               if (errorss) {
-                console.log(errorss)
+                // console.log(errorss)
                 res.send({status: false, message: `An error occured while trying to send a message to ${newUser.email}, your account has been registered but please contact ${process.env.EMAIL} to verify your account. Thank you`})
               } else {
                 res.send({
